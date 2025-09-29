@@ -52,6 +52,13 @@ function clashon() {
 }
 
 watch_proxy() {
+    # 检查是否启用自动加载代理环境
+    local auto_proxy_file="/opt/clash/.auto_proxy"
+    [ ! -f "$auto_proxy_file" ] && return
+    
+    local auto_proxy_enabled=$(cat "$auto_proxy_file" 2>/dev/null || echo "false")
+    [ "$auto_proxy_enabled" != "true" ] && return
+    
     # 新开交互式shell，且无代理变量时
     [ -z "$http_proxy" ] && [[ $- == *i* ]] && {
         # root用户自动开启代理环境（普通用户会触发sudo验证密码导致卡住）
@@ -305,6 +312,14 @@ function clashctl() {
         shift
         clashnode "$@"
         ;;
+    autostart)
+        shift
+        clashautostart "$@"
+        ;;
+    autoproxy)
+        shift
+        clashautoproxy "$@"
+        ;;
     *)
         shift
         clashhelp "$@"
@@ -329,6 +344,8 @@ Commands:
     secret   [SECRET]       Web 密钥
     update   [auto|log]     更新订阅
     node     [COMMAND]      节点管理 (list|select|switch|current)
+    autostart [on|off]      开机自启 (enable|disable)
+    autoproxy [on|off]      登录自动加载代理环境
 
 EOF
 }
@@ -339,12 +356,158 @@ clashnode() {
     local proxy_switcher="$script_dir/proxy_switcher.sh"
     
     if [ ! -f "$proxy_switcher" ]; then
-        _failcat "❌" "代理切换脚本不存在: $proxy_switcher"
+        _failcat "❌" "节点管理功能不可用"
         return 1
     fi
     
-    # 直接调用代理切换脚本
-    "$proxy_switcher" "$@"
+    # 如果没有参数，显示节点管理帮助
+    if [ $# -eq 0 ]; then
+        clashnode_help
+        return 1
+    fi
+    
+    # 处理 --help 参数
+    if [ "$1" = "--help" ] || [ "$1" = "-h" ]; then
+        clashnode_help
+        return 0
+    fi
+    
+    # 调用代理切换脚本，但重定向错误信息
+    "$proxy_switcher" "$@" 2>&1 | sed 's|/opt/clash/script/proxy_switcher.sh|clashctl node|g; s|proxy_switcher.sh|clashctl node|g'
+}
+
+# 节点管理帮助信息
+clashnode_help() {
+    cat <<EOF
+
+Clash 节点管理工具
+
+用法: clashctl node [选项] [命令]
+
+选项:
+  -u, --url URL        指定 Clash API 地址 (默认: http://localhost:9090)
+  -s, --secret SECRET  指定 API 密钥
+  -m, --mode MODE      指定代理模式 (默认: GLOBAL)
+  -h, --help          显示此帮助信息
+
+命令:
+  list                 列出所有可用的代理节点
+  select               交互式选择代理节点
+  switch NODE          直接切换到指定节点
+  current              显示当前使用的代理节点
+  test                 测试 API 连接
+
+示例:
+  clashctl node list                          # 列出所有节点
+  clashctl node select                        # 交互式选择节点
+  clashctl node switch "香港节点01"            # 直接切换到指定节点
+  clashctl node -m Proxy select               # 在 Proxy 模式下选择节点
+  clashctl node -u http://127.0.0.1:9090 list # 使用自定义 API 地址
+
+EOF
+}
+
+# 自启动管理功能
+clashautostart() {
+    local action="$1"
+    
+    case "$action" in
+        on|enable)
+            if systemctl enable "$BIN_KERNEL_NAME" >/dev/null 2>&1; then
+                _okcat '✅' "已启用开机自启动"
+                _okcat 'ℹ️' "服务将在下次重启时自动启动"
+            else
+                _failcat '❌' "启用自启动失败，请检查权限"
+                return 1
+            fi
+            ;;
+        off|disable)
+            if systemctl disable "$BIN_KERNEL_NAME" >/dev/null 2>&1; then
+                _okcat '✅' "已禁用开机自启动"
+                _okcat 'ℹ️' "服务将不会在重启时自动启动"
+            else
+                _failcat '❌' "禁用自启动失败，请检查权限"
+                return 1
+            fi
+            ;;
+        status|"")
+            local status=$(systemctl is-enabled "$BIN_KERNEL_NAME" 2>/dev/null || echo "disabled")
+            case "$status" in
+                enabled)
+                    _okcat '🚀' "开机自启动：已启用"
+                    ;;
+                disabled)
+                    _okcat '🔒' "开机自启动：已禁用"
+                    ;;
+                *)
+                    _okcat '❓' "开机自启动：状态未知 ($status)"
+                    ;;
+            esac
+            ;;
+        *)
+            _failcat '❌' "无效参数。用法: clashctl autostart [on|off|status]"
+            cat << EOF
+
+自启动管理:
+  clashctl autostart on      # 启用开机自启
+  clashctl autostart off     # 禁用开机自启
+  clashctl autostart status  # 查看自启状态
+
+EOF
+            return 1
+            ;;
+    esac
+}
+
+# 自动加载代理环境管理功能
+clashautoproxy() {
+    local action="$1"
+    local auto_proxy_file="/opt/clash/.auto_proxy"
+    
+    case "$action" in
+        on|enable)
+            echo "true" | sudo tee "$auto_proxy_file" >/dev/null
+            _okcat '✅' "已启用登录自动加载代理环境"
+            _okcat 'ℹ️' "下次登录终端时将自动执行 clashon"
+            ;;
+        off|disable)
+            echo "false" | sudo tee "$auto_proxy_file" >/dev/null
+            _okcat '✅' "已禁用登录自动加载代理环境"
+            _okcat 'ℹ️' "下次登录终端时不会自动加载代理"
+            ;;
+        status|"")
+            if [ -f "$auto_proxy_file" ]; then
+                local status=$(cat "$auto_proxy_file" 2>/dev/null || echo "false")
+                case "$status" in
+                    true)
+                        _okcat '🚀' "登录自动加载代理：已启用"
+                        ;;
+                    false)
+                        _okcat '🔒' "登录自动加载代理：已禁用"
+                        ;;
+                    *)
+                        _okcat '❓' "登录自动加载代理：状态未知 ($status)"
+                        ;;
+                esac
+            else
+                _okcat '🔒' "登录自动加载代理：已禁用（默认）"
+            fi
+            ;;
+        *)
+            _failcat '❌' "无效参数。用法: clashctl autoproxy [on|off|status]"
+            cat << EOF
+
+自动加载代理环境管理:
+  clashctl autoproxy on      # 启用登录自动加载代理
+  clashctl autoproxy off     # 禁用登录自动加载代理
+  clashctl autoproxy status  # 查看当前状态
+
+注意：这控制的是登录终端时是否自动执行 clashon（显示"😼 已开启代理环境"）
+
+EOF
+            return 1
+            ;;
+    esac
 }
 
 # 快捷命令别名

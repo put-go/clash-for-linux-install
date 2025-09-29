@@ -50,11 +50,36 @@ EOF
 systemctl daemon-reload
 systemctl enable "$BIN_KERNEL_NAME" >&/dev/null || _failcat '💥' "设置自启失败" && _okcat '🚀' "已设置开机自启"
 
+# 询问是否启用登录自动加载代理环境
+echo ""
+read -p "$(_okcat '🔄' '是否启用登录终端自动加载代理环境？(y/n): ')" auto_proxy
+case "$auto_proxy" in
+    [Yy]|[Yy][Ee][Ss])
+        echo "true" >"$CLASH_BASE_DIR/.auto_proxy"
+        _okcat '✅' "已启用登录自动加载代理环境"
+        _okcat 'ℹ️' "每次登录终端时将自动执行 clashon"
+        ;;
+    *)
+        echo "false" >"$CLASH_BASE_DIR/.auto_proxy"
+        _okcat 'ℹ️' "已禁用登录自动加载代理，可稍后通过命令启用：clashctl autoproxy on"
+        ;;
+esac
+
+# 询问是否立即启动代理
+echo ""
+read -p "$(_okcat '🎯' '是否立即启动代理服务？(y/n): ')" start_now
+case "$start_now" in
+    [Yy]|[Yy][Ee][Ss])
+        clashon
+        ;;
+    *)
+        _okcat 'ℹ️' "代理服务未启动，可通过命令启动：clashon"
+        ;;
+esac
+
 clashui
 clashsecret "$(_get_random_val)" >/dev/null
 clashsecret
 clashctl
-# shellcheck disable=SC2016
-[ "$SUDO_USER" != 'root' ] && _okcat '请执行 clashon 开启代理环境'
 _okcat '🎉' 'enjoy 🎉'
 _quit

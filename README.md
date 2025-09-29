@@ -51,6 +51,8 @@
 | **代理管理** | 一键启停代理服务 | `clashon` / `clashoff` |
 | **Web 控制台** | 可视化节点管理 | `clashui` |
 | **节点切换** | 命令行快速切换节点 | `clashctl node select` |
+| **自启动管理** | 开机自启动控制 | `clashctl autostart on` |
+| **自动加载代理** | 登录终端自动加载代理 | `clashctl autoproxy on` |
 | **订阅管理** | 自动更新订阅配置 | `clashupdate` |
 | **TUN 模式** | 透明代理所有流量 | `clashtun on` |
 | **系统代理** | 自动配置系统代理 | `clashproxy on` |
@@ -109,6 +111,8 @@ Commands:
     secret   [SECRET]    Web 密钥
     update   [auto|log]  更新订阅
     node     [COMMAND]   节点管理 (list|select|switch|current)
+    autostart [on|off]   开机自启 (enable|disable)
+    autoproxy [on|off]   登录自动加载代理环境
 ```
 
 💡`clashon` 等同于 `clashctl on`，`Tab` 补全更方便！
@@ -185,6 +189,56 @@ $ clashctl node current
 - 支持不同代理模式：`clashctl node -m Proxy select`
 - 自定义 API 地址：`clashctl node -u http://127.0.0.1:9090 list`
 - 指定密钥访问：`clashctl node -s your_secret current`
+
+### 自启动管理
+
+🔧 **便捷管理**：轻松控制 Clash 开机自启动设置
+
+```bash
+# 查看自启动状态
+$ clashctl autostart
+🔒 开机自启动：已禁用
+
+# 启用开机自启动
+$ clashctl autostart on
+✅ 已启用开机自启动
+ℹ️ 服务将在下次重启时自动启动
+
+# 禁用开机自启动
+$ clashctl autostart off
+✅ 已禁用开机自启动
+ℹ️ 服务将不会在重启时自动启动
+```
+
+- 安装时默认启用开机自启动
+- 支持后续随时开启或关闭
+- 查看当前自启动状态
+
+### 自动加载代理环境
+
+🔄 **智能管理**：控制登录终端时是否自动执行 `clashon`（显示"😼 已开启代理环境"）
+
+```bash
+# 查看自动加载状态
+$ clashctl autoproxy
+🔒 登录自动加载代理：已禁用
+
+# 启用登录自动加载代理环境
+$ clashctl autoproxy on
+✅ 已启用登录自动加载代理环境
+ℹ️ 下次登录终端时将自动执行 clashon
+
+# 禁用登录自动加载代理环境
+$ clashctl autoproxy off
+✅ 已禁用登录自动加载代理环境
+ℹ️ 下次登录终端时不会自动加载代理
+```
+
+- **自启动 vs 自动加载的区别**：
+  - `autostart`：控制系统启动时是否自动启动 Clash 服务
+  - `autoproxy`：控制登录终端时是否自动加载代理环境变量
+- 安装时可选择是否启用自动加载
+- 默认禁用，避免不必要的自动行为
 
 ### 更新订阅
 
@@ -285,7 +339,11 @@ sudo bash uninstall.sh
 - ✅ **全面支持 ARM64 架构**：新增 ARM64/aarch64 架构完整支持
 - ✅ 增强多架构支持：智能架构检测和对应二进制文件选择
 - ✅ **新增命令行节点切换**：支持快速切换代理节点，无需 Web 控制台
+- ✅ **优化安装体验**：保持开机自启动默认启用，可选择自动加载和立即启动
+- ✅ **自启动管理**：新增 `clashctl autostart` 命令管理开机自启
+- ✅ **自动加载代理管理**：新增 `clashctl autoproxy` 命令控制登录自动加载
 - ✅ 自动安装依赖工具：自动检测并安装 jq 等必要工具
+- ✅ **改进用户体验**：统一命令接口，隐藏底层脚本实现细节
 - ✅ 改进 Web 控制台界面
 - ✅ 优化订阅更新机制
 

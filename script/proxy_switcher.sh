@@ -306,7 +306,7 @@ main() {
         switch)
             if [ -z "$proxy_name" ]; then
                 echo "❌ 错误: switch 命令需要指定节点名称"
-                echo "用法: $0 switch \"节点名称\""
+                echo "用法: clashctl node switch \"节点名称\""
                 exit 1
             fi
             switch_proxy "$proxy_name" "$mode"
@@ -319,12 +319,12 @@ main() {
             ;;
         "")
             echo "❌ 错误: 请指定命令"
-            echo "使用 $0 --help 查看帮助信息"
+            echo "使用 clashctl node --help 查看帮助信息"
             exit 1
             ;;
         *)
             echo "❌ 错误: 未知命令: $command"
-            echo "使用 $0 --help 查看帮助信息"
+            echo "使用 clashctl node --help 查看帮助信息"
             exit 1
             ;;
     esac
