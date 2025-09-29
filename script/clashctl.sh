@@ -387,7 +387,7 @@ Clash 节点管理工具
 选项:
   -u, --url URL        指定 Clash API 地址 (默认: http://localhost:9090)
   -s, --secret SECRET  指定 API 密钥
-  -m, --mode MODE      指定代理模式 (默认: GLOBAL)
+  -m, --mode MODE      指定代理模式 (默认: 自动检测)
   -h, --help          显示此帮助信息
 
 命令:
@@ -395,6 +395,7 @@ Clash 节点管理工具
   select               交互式选择代理节点
   switch NODE          直接切换到指定节点
   current              显示当前使用的代理节点
+  modes                显示所有可用的代理模式
   test                 测试 API 连接
 
 示例:

@@ -39,7 +39,7 @@ Clash 代理节点切换工具
 选项:
   -u, --url URL        指定 Clash API 地址 (默认: $api_url)
   -s, --secret SECRET  指定 API 密钥
-  -m, --mode MODE      指定代理模式 (默认: GLOBAL)
+  -m, --mode MODE      指定代理模式 (默认: 自动检测)
   -h, --help          显示此帮助信息
 
 命令:
@@ -47,6 +47,7 @@ Clash 代理节点切换工具
   select               交互式选择代理节点
   switch NODE          直接切换到指定节点
   current              显示当前使用的代理节点
+  modes                显示所有可用的代理模式
   test                 测试 API 连接
 
 示例:
@@ -83,20 +84,69 @@ test_connection() {
     fi
 }
 
-# 获取 Clash 代理节点列表
-get_proxy_list() {
-    local mode=${1:-"GLOBAL"}
+# 获取可用的代理模式
+get_available_modes() {
     local auth_header=""
     
     if [ -n "$Secret" ]; then
         auth_header="-H \"Authorization: Bearer $Secret\""
     fi
     
+    eval "curl -s -X GET -H \"Content-Type: application/json\" $auth_header \"$api_url/proxies\"" | jq -r '.proxies | keys[]' 2>/dev/null
+}
+
+# 自动检测最佳代理模式
+detect_proxy_mode() {
+    local auth_header=""
+    
+    if [ -n "$Secret" ]; then
+        auth_header="-H \"Authorization: Bearer $Secret\""
+    fi
+    
+    local proxies_json=$(eval "curl -s -X GET -H \"Content-Type: application/json\" $auth_header \"$api_url/proxies\"" 2>/dev/null)
+    
+    # 优先级顺序：GLOBAL > Proxy > 其他模式
+    for mode in "GLOBAL" "Proxy" "🎯 国外流量" "🎯 全球直连" "🌍GlobalProxy"; do
+        local nodes=$(echo "$proxies_json" | jq -c ".proxies.\"$mode\".all // []" 2>/dev/null)
+        if [ "$nodes" != "null" ] && [ "$nodes" != "[]" ] && [ -n "$nodes" ]; then
+            echo "$mode"
+            return 0
+        fi
+    done
+    
+    # 如果没有找到常见模式，返回第一个有节点的模式
+    local first_mode=$(echo "$proxies_json" | jq -r '.proxies | to_entries[] | select(.value.all != null and (.value.all | length) > 0) | .key' 2>/dev/null | head -1)
+    if [ -n "$first_mode" ]; then
+        echo "$first_mode"
+        return 0
+    fi
+    
+    echo "GLOBAL"  # 默认返回 GLOBAL
+}
+
+# 获取 Clash 代理节点列表
+get_proxy_list() {
+    local mode=${1:-""}
+    local auth_header=""
+    
+    if [ -n "$Secret" ]; then
+        auth_header="-H \"Authorization: Bearer $Secret\""
+    fi
+    
+    # 如果没有指定模式，自动检测
+    if [ -z "$mode" ]; then
+        mode=$(detect_proxy_mode)
+    fi
+    
     # 获取代理节点列表
-    proxies=$(eval "curl -s -X GET -H \"Content-Type: application/json\" $auth_header \"$api_url/proxies\"" | jq -c ".proxies.$mode.all // []" 2>/dev/null)
+    proxies=$(eval "curl -s -X GET -H \"Content-Type: application/json\" $auth_header \"$api_url/proxies\"" | jq -c ".proxies.\"$mode\".all // []" 2>/dev/null)
     
     if [ "$proxies" = "null" ] || [ "$proxies" = "[]" ] || [ -z "$proxies" ]; then
-        echo "❌ 无法获取代理节点列表，请检查模式名称: $mode"
+        echo "❌ 无法获取代理节点列表，模式: $mode"
+        echo "ℹ️ 可用的代理模式："
+        get_available_modes | while read -r available_mode; do
+            echo "   - $available_mode"
+        done
         return 1
     fi
     
@@ -105,20 +155,30 @@ get_proxy_list() {
 
 # 获取当前代理节点
 get_current_proxy() {
-    local mode=${1:-"GLOBAL"}
+    local mode=${1:-""}
     local auth_header=""
     
     if [ -n "$Secret" ]; then
         auth_header="-H \"Authorization: Bearer $Secret\""
     fi
     
-    local current=$(eval "curl -s -X GET -H \"Content-Type: application/json\" $auth_header \"$api_url/proxies\"" | jq -r ".proxies.$mode.now // \"未知\"" 2>/dev/null)
+    # 如果没有指定模式，自动检测
+    if [ -z "$mode" ]; then
+        mode=$(detect_proxy_mode)
+    fi
+    
+    local current=$(eval "curl -s -X GET -H \"Content-Type: application/json\" $auth_header \"$api_url/proxies\"" | jq -r ".proxies.\"$mode\".now // \"未知\"" 2>/dev/null)
     echo "$current"
 }
 
 # 列出所有代理节点
 list_proxies() {
-    local mode=${1:-"GLOBAL"}
+    local mode=${1:-""}
+    
+    # 如果没有指定模式，自动检测
+    if [ -z "$mode" ]; then
+        mode=$(detect_proxy_mode)
+    fi
     
     echo "🌐 获取代理节点列表 (模式: $mode)..."
     
@@ -136,6 +196,7 @@ list_proxies() {
     echo ""
     echo "========== 代理节点列表 =========="
     echo "当前节点: $current"
+    echo "当前模式: $mode"
     echo "================================="
     
     local i=1
@@ -153,7 +214,12 @@ list_proxies() {
 
 # 交互式选择代理节点
 select_proxy() {
-    local mode=${1:-"GLOBAL"}
+    local mode=${1:-""}
+    
+    # 如果没有指定模式，自动检测
+    if [ -z "$mode" ]; then
+        mode=$(detect_proxy_mode)
+    fi
     
     if ! test_connection; then
         return 1
@@ -187,11 +253,16 @@ select_proxy() {
 # 直接切换到指定节点
 switch_proxy() {
     local proxy_name="$1"
-    local mode=${2:-"GLOBAL"}
+    local mode=${2:-""}
     
     if [ -z "$proxy_name" ]; then
         echo "❌ 请指定节点名称"
         return 1
+    fi
+    
+    # 如果没有指定模式，自动检测
+    if [ -z "$mode" ]; then
+        mode=$(detect_proxy_mode)
     fi
     
     if ! test_connection; then
@@ -229,7 +300,12 @@ switch_proxy() {
 
 # 显示当前代理节点
 show_current() {
-    local mode=${1:-"GLOBAL"}
+    local mode=${1:-""}
+    
+    # 如果没有指定模式，自动检测
+    if [ -z "$mode" ]; then
+        mode=$(detect_proxy_mode)
+    fi
     
     if ! test_connection; then
         return 1
@@ -245,7 +321,7 @@ main() {
     _load_config
     
     # 解析参数
-    local mode="GLOBAL"
+    local mode=""  # 默认为空，让函数自动检测
     local command=""
     local proxy_name=""
     
@@ -267,7 +343,7 @@ main() {
                 show_help
                 exit 0
                 ;;
-            list|select|current|test)
+            list|select|current|test|modes)
                 command="$1"
                 shift
                 ;;
@@ -313,6 +389,24 @@ main() {
             ;;
         current)
             show_current "$mode"
+            ;;
+        modes)
+            if ! test_connection; then
+                exit 1
+            fi
+            echo "🎯 可用的代理模式："
+            get_available_modes | while read -r available_mode; do
+                # 检查该模式是否有节点
+                local auth_header=""
+                if [ -n "$Secret" ]; then
+                    auth_header="-H \"Authorization: Bearer $Secret\""
+                fi
+                local nodes=$(eval "curl -s -X GET -H \"Content-Type: application/json\" $auth_header \"$api_url/proxies\"" | jq -c ".proxies.\"$available_mode\".all // []" 2>/dev/null)
+                local node_count=$(echo "$nodes" | jq 'length' 2>/dev/null || echo "0")
+                echo "   - $available_mode ($node_count 个节点)"
+            done
+            echo ""
+            echo "💡 使用 'clashctl node -m 模式名 list' 查看特定模式的节点"
             ;;
         test)
             test_connection

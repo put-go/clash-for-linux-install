@@ -186,9 +186,15 @@ $ clashctl node current
 ```
 
 **高级用法**：
-- 支持不同代理模式：`clashctl node -m Proxy select`
+- 查看所有代理模式：`clashctl node modes`
+- 指定代理模式：`clashctl node -m Proxy select`
 - 自定义 API 地址：`clashctl node -u http://127.0.0.1:9090 list`
 - 指定密钥访问：`clashctl node -s your_secret current`
+
+**智能模式检测**：
+- 默认自动检测最合适的代理模式（GLOBAL > Proxy > 其他）
+- 自动识别不同配置文件的代理组织结构
+- 优先使用有节点数据的代理模式
 
 ### 自启动管理
 
