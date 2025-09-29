@@ -109,6 +109,12 @@ find . -type f ! -path "./.git/*" ! -path "./.github/*" | while read -r file; do
     # 移除开头的 ./
     clean_file="${file#./}"
     
+    # 特殊处理：resources/zip/ 目录下的文件必须保留
+    if [[ "$clean_file" == resources/zip/* ]]; then
+        echo "${PROJECT_NAME}/${clean_file}" >> "$FILE_LIST"
+        continue
+    fi
+    
     # 检查是否匹配排除模式
     if ! echo "$clean_file" | grep -qE "^($EXCLUDE_REGEX)$"; then
         # 检查父目录是否在排除列表中
@@ -121,7 +127,8 @@ find . -type f ! -path "./.git/*" ! -path "./.github/*" | while read -r file; do
         done
         
         if [ "$exclude_file" = false ]; then
-            echo "$clean_file" >> "$FILE_LIST"
+            # 添加项目目录前缀
+            echo "${PROJECT_NAME}/${clean_file}" >> "$FILE_LIST"
         fi
     fi
 done
@@ -139,7 +146,10 @@ echo "📊 找到 ${FILE_COUNT} 个文件待打包"
 
 # 使用 ptar 创建压缩包
 echo "🔄 正在使用 ptar 打包..."
-ptar -c -z -v -f "$ARCHIVE_NAME" -T "$FILE_LIST"
+# 切换到上级目录执行打包，这样可以包含完整的目录结构
+cd ..
+ptar -c -z -v -f "${PROJECT_NAME}/${ARCHIVE_NAME}" -T "${FILE_LIST}"
+cd "${PROJECT_NAME}"
 
 # 清理临时文件
 rm -rf "$TEMP_DIR"
@@ -163,9 +173,9 @@ if [ -f "$ARCHIVE_NAME" ]; then
     # 验证关键文件是否包含
     echo ""
     echo "🔍 验证关键文件:"
-    CRITICAL_FILES=("install.sh" "uninstall.sh" "README.md" "LICENSE")
+    CRITICAL_FILES=("install.sh" "uninstall.sh" "LICENSE")
     for file in "${CRITICAL_FILES[@]}"; do
-        if ptar -t -f "$ARCHIVE_NAME" | grep -q "${file}$"; then
+        if ptar -t -f "$ARCHIVE_NAME" | grep -q "${PROJECT_NAME}/${file}$"; then
             echo "  ✅ ${file}"
         else
             echo "  ❌ ${file} (缺失)"
