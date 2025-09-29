@@ -15,7 +15,7 @@
 - **🔧 简单易用**：一键安装脚本，自动化配置，零学习成本
 - **⚡ 高性能内核**：默认安装 `mihomo` 内核，[可选安装](https://github.com/nelvko/clash-for-linux-install/wiki/FAQ#%E5%AE%89%E8%A3%85-clash-%E5%86%85%E6%A0%B8) `clash`
 - **🔄 订阅转换**：支持使用 [subconverter](https://github.com/tindy2013/subconverter) 进行本地订阅转换
-- **🌐 多架构支持**：适配主流 `Linux` 发行版：`CentOS 7.6`、`Debian 12`、`Ubuntu 24.04.1 LTS`
+- **🌐 多架构支持**：支持 `x86_64`、`ARM64` 架构，适配主流 `Linux` 发行版：`CentOS 7.6`、`Debian 12`、`Ubuntu 24.04.1 LTS`
 - **📊 可视化管理**：集成 Web 控制台，支持节点切换、流量监控、日志查看
 - **🔒 安全可靠**：支持 TUN 模式、DNS 劫持、系统代理自动配置
 - **⏰ 自动更新**：支持定时更新订阅，保持节点实时可用
@@ -26,7 +26,7 @@
 | 项目 | 要求 |
 |------|------|
 | **操作系统** | CentOS 7.6+、Debian 12+、Ubuntu 24.04.1 LTS+ |
-| **架构支持** | x86_64、arm64、armv7 等主流架构 |
+| **架构支持** | x86_64、ARM64(aarch64) |
 | **用户权限** | `root` 或 `sudo` 用户 ([普通用户安装指南](https://github.com/nelvko/clash-for-linux-install/issues/91)) |
 | **Shell 环境** | `bash`、`zsh`、`fish` |
 | **网络要求** | 能够访问 GitHub 或使用代理镜像 |
@@ -39,6 +39,7 @@
 
 - **开发环境**：为开发者提供稳定的网络代理环境
 - **服务器部署**：在 VPS 或云服务器上快速部署代理服务
+- **ARM 设备**：支持树莓派、ARM 开发板、Apple Silicon Mac 等 ARM 架构设备
 - **容器化应用**：支持 Docker 容器的网络代理
 - **自动化运维**：支持脚本化管理和定时任务
 - **团队协作**：统一的代理配置管理方案
@@ -68,7 +69,11 @@
 
 ### 一键安装
 
-下述命令适用于 `x86_64` 架构，其他架构请戳：[一键安装-多架构](https://github.com/nelvko/clash-for-linux-install/wiki#%E4%B8%80%E9%94%AE%E5%AE%89%E8%A3%85-%E5%A4%9A%E6%9E%B6%E6%9E%84)
+**适用于所有支持的架构**（脚本会自动检测并选择对应的二进制文件）：
+
+支持的架构包括：
+- ✅ `x86_64` (Intel/AMD 64位)
+- ✅ `ARM64` / `aarch64` (ARM 64位，如树莓派4B、M1/M2 Mac、云服务器等)
 
 ```bash
 git clone --branch master --depth 1 https://gh-proxy.com/https://github.com/put-go/clash-for-linux-install.git \
@@ -239,7 +244,8 @@ sudo bash uninstall.sh
 #### Fork 版本改进
 - ✅ 完善项目文档和说明
 - ✅ 优化安装脚本的错误处理
-- ✅ 增强多架构支持
+- ✅ **全面支持 ARM64 架构**：新增 ARM64/aarch64 架构完整支持
+- ✅ 增强多架构支持：智能架构检测和对应二进制文件选择
 - ✅ 改进 Web 控制台界面
 - ✅ 优化订阅更新机制
 

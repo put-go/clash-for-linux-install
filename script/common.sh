@@ -22,6 +22,27 @@ ZIP_YQ=$(echo ${ZIP_BASE_DIR}/yq*)
 ZIP_SUBCONVERTER=$(echo ${ZIP_BASE_DIR}/subconverter*)
 ZIP_UI="${ZIP_BASE_DIR}/yacd.tar.xz"
 
+# 根据架构选择对应的二进制文件
+_select_arch_files() {
+    local arch=$(uname -m)
+    case "$arch" in
+    x86_64)
+        ZIP_MIHOMO=$(echo ${ZIP_BASE_DIR}/mihomo*amd64*)
+        ZIP_YQ=$(echo ${ZIP_BASE_DIR}/yq*amd64*)
+        ZIP_SUBCONVERTER=$(echo ${ZIP_BASE_DIR}/subconverter*linux64*)
+        ;;
+    aarch64|arm64)
+        ZIP_MIHOMO=$(echo ${ZIP_BASE_DIR}/mihomo*arm64*)
+        ZIP_YQ=$(echo ${ZIP_BASE_DIR}/yq*arm64*)
+        ZIP_SUBCONVERTER=$(echo ${ZIP_BASE_DIR}/subconverter*aarch64*)
+        ;;
+    *)
+        _error_quit "不支持的架构：$arch。当前仅支持 x86_64 和 ARM64(aarch64) 架构。"
+        ;;
+    esac
+}
+_select_arch_files
+
 CLASH_BASE_DIR='/opt/clash'
 CLASH_SCRIPT_DIR="${CLASH_BASE_DIR}/$(basename $SCRIPT_BASE_DIR)"
 CLASH_CONFIG_URL="${CLASH_BASE_DIR}/url"
@@ -105,6 +126,9 @@ _set_rc() {
 # 默认集成、安装mihomo内核
 # 移除/删除mihomo：下载安装clash内核
 function _get_kernel() {
+    # 重新选择架构相关的文件
+    _select_arch_files
+    
     [ -f "$ZIP_CLASH" ] && {
         ZIP_KERNEL=$ZIP_CLASH
         BIN_KERNEL=$BIN_CLASH
@@ -117,14 +141,14 @@ function _get_kernel() {
 
     [ ! -f "$ZIP_MIHOMO" ] && [ ! -f "$ZIP_CLASH" ] && {
         local arch=$(uname -m)
-        _failcat "${ZIP_BASE_DIR}：未检测到可用的内核压缩包"
+        _failcat "${ZIP_BASE_DIR}：未检测到可用的内核压缩包（架构：${arch}）"
         _download_clash "$arch"
         ZIP_KERNEL=$ZIP_CLASH
         BIN_KERNEL=$BIN_CLASH
     }
 
     BIN_KERNEL_NAME=$(basename "$BIN_KERNEL")
-    _okcat "安装内核：$BIN_KERNEL_NAME"
+    _okcat "安装内核：$BIN_KERNEL_NAME（架构：$(uname -m)）"
 }
 
 _get_random_port() {
@@ -254,20 +278,12 @@ _download_clash() {
         url=https://downloads.clash.wiki/ClashPremium/clash-linux-amd64-2023.08.17.gz
         sha256sum='92380f053f083e3794c1681583be013a57b160292d1d9e1056e7fa1c2d948747'
         ;;
-    *86*)
-        url=https://downloads.clash.wiki/ClashPremium/clash-linux-386-2023.08.17.gz
-        sha256sum='254125efa731ade3c1bf7cfd83ae09a824e1361592ccd7c0cccd2a266dcb92b5'
-        ;;
-    armv*)
-        url=https://downloads.clash.wiki/ClashPremium/clash-linux-armv5-2023.08.17.gz
-        sha256sum='622f5e774847782b6d54066f0716114a088f143f9bdd37edf3394ae8253062e8'
-        ;;
-    aarch64)
+    aarch64|arm64)
         url=https://downloads.clash.wiki/ClashPremium/clash-linux-arm64-2023.08.17.gz
         sha256sum='c45b39bb241e270ae5f4498e2af75cecc0f03c9db3c0db5e55c8c4919f01afdd'
         ;;
     *)
-        _error_quit "未知的架构版本：$arch，请自行下载对应版本至 ${ZIP_BASE_DIR} 目录下：https://downloads.clash.wiki/ClashPremium/"
+        _error_quit "不支持的架构：$arch。当前仅支持 x86_64 和 ARM64(aarch64) 架构。"
         ;;
     esac
 
