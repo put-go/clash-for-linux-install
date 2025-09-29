@@ -274,10 +274,10 @@ sudo bash uninstall.sh
 
 ## Star History
 
-<a href="https://www.star-history.com/#nelvko/clash-for-linux-install&Date">
+<a href="https://www.star-history.com/#put-go/clash-for-linux-install&Date">
  <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=nelvko/clash-for-linux-install&type=Date&theme=dark" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=nelvko/clash-for-linux-install&type=Date" />
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=put-go/clash-for-linux-install&type=Date&theme=dark" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=put-go/clash-for-linux-install&type=Date" />
    <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=nelvko/clash-for-linux-install&type=Date" />
  </picture>
 </a>
