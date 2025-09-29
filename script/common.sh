@@ -253,6 +253,39 @@ function _valid_env() {
     _is_root || _error_quit "需要 root 或 sudo 权限执行"
     [ -n "$ZSH_VERSION" ] && [ -n "$BASH_VERSION" ] && _error_quit "仅支持：bash、zsh"
     [ "$(ps -p 1 -o comm=)" != "systemd" ] && _error_quit "系统不具备 systemd"
+    _check_dependencies
+}
+
+function _check_dependencies() {
+    # 检查 jq 工具
+    if ! command -v jq >/dev/null 2>&1; then
+        _okcat '📦' "正在安装 jq 工具..."
+        
+        # 检测系统类型并安装 jq
+        if command -v apt-get >/dev/null 2>&1; then
+            # Debian/Ubuntu
+            apt-get update >/dev/null 2>&1 && apt-get install -y jq >/dev/null 2>&1
+        elif command -v yum >/dev/null 2>&1; then
+            # CentOS/RHEL
+            yum install -y jq >/dev/null 2>&1
+        elif command -v dnf >/dev/null 2>&1; then
+            # Fedora
+            dnf install -y jq >/dev/null 2>&1
+        elif command -v pacman >/dev/null 2>&1; then
+            # Arch Linux
+            pacman -S --noconfirm jq >/dev/null 2>&1
+        else
+            _failcat "⚠️" "无法自动安装 jq，请手动安装后重试"
+            _error_quit "安装命令示例：apt-get install jq 或 yum install jq"
+        fi
+        
+        # 验证安装
+        if command -v jq >/dev/null 2>&1; then
+            _okcat '✅' "jq 工具安装成功"
+        else
+            _error_quit "❌ jq 工具安装失败，请手动安装"
+        fi
+    fi
 }
 
 function _valid_config() {

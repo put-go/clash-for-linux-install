@@ -50,6 +50,7 @@
 |---------|------|----------|
 | **代理管理** | 一键启停代理服务 | `clashon` / `clashoff` |
 | **Web 控制台** | 可视化节点管理 | `clashui` |
+| **节点切换** | 命令行快速切换节点 | `clashctl node select` |
 | **订阅管理** | 自动更新订阅配置 | `clashupdate` |
 | **TUN 模式** | 透明代理所有流量 | `clashtun on` |
 | **系统代理** | 自动配置系统代理 | `clashproxy on` |
@@ -107,6 +108,7 @@ Commands:
     mixin    [-e|-r]     Mixin 配置
     secret   [SECRET]    Web 密钥
     update   [auto|log]  更新订阅
+    node     [COMMAND]   节点管理 (list|select|switch|current)
 ```
 
 💡`clashon` 等同于 `clashctl on`，`Tab` 补全更方便！
@@ -147,6 +149,42 @@ $ clashsecret
 
 - 通过浏览器打开 Web 控制台，实现可视化操作：切换节点、查看日志等。
 - 若暴露到公网使用建议定期更换密钥。
+
+### 节点管理
+
+🚀 **新功能**：支持通过命令行快速切换代理节点，无需打开 Web 控制台
+
+```bash
+# 列出所有可用节点
+$ clashctl node list
+🌐 获取代理节点列表 (模式: GLOBAL)...
+========== 代理节点列表 ==========
+当前节点: 香港节点01
+=================================
+1. 香港节点01 ⭐ (当前)
+2. 香港节点02
+3. 新加坡节点01
+4. 美国节点01
+=================================
+
+# 交互式选择节点
+$ clashctl node select
+请选择代理节点（输入编号）: 2
+✅ 代理节点已成功切换为: 香港节点02
+
+# 直接切换到指定节点
+$ clashctl node switch "美国节点01"
+✅ 代理节点已成功切换为: 美国节点01
+
+# 查看当前使用的节点
+$ clashctl node current
+📍 当前代理节点 (模式: GLOBAL): 美国节点01
+```
+
+**高级用法**：
+- 支持不同代理模式：`clashctl node -m Proxy select`
+- 自定义 API 地址：`clashctl node -u http://127.0.0.1:9090 list`
+- 指定密钥访问：`clashctl node -s your_secret current`
 
 ### 更新订阅
 
@@ -246,6 +284,8 @@ sudo bash uninstall.sh
 - ✅ 优化安装脚本的错误处理
 - ✅ **全面支持 ARM64 架构**：新增 ARM64/aarch64 架构完整支持
 - ✅ 增强多架构支持：智能架构检测和对应二进制文件选择
+- ✅ **新增命令行节点切换**：支持快速切换代理节点，无需 Web 控制台
+- ✅ 自动安装依赖工具：自动检测并安装 jq 等必要工具
 - ✅ 改进 Web 控制台界面
 - ✅ 优化订阅更新机制
 

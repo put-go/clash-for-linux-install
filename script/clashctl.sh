@@ -301,6 +301,10 @@ function clashctl() {
         shift
         clashupdate "$@"
         ;;
+    node)
+        shift
+        clashnode "$@"
+        ;;
     *)
         shift
         clashhelp "$@"
@@ -324,6 +328,26 @@ Commands:
     mixin    [-e|-r]        Mixin 配置
     secret   [SECRET]       Web 密钥
     update   [auto|log]     更新订阅
+    node     [COMMAND]      节点管理 (list|select|switch|current)
 
 EOF
 }
+
+# 节点管理功能
+clashnode() {
+    local script_dir="$(dirname "${BASH_SOURCE[0]}")"
+    local proxy_switcher="$script_dir/proxy_switcher.sh"
+    
+    if [ ! -f "$proxy_switcher" ]; then
+        _failcat "❌" "代理切换脚本不存在: $proxy_switcher"
+        return 1
+    fi
+    
+    # 直接调用代理切换脚本
+    "$proxy_switcher" "$@"
+}
+
+# 快捷命令别名
+alias clashnode-list='clashnode list'
+alias clashnode-select='clashnode select'
+alias clashnode-current='clashnode current'
