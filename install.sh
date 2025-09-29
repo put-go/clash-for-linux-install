@@ -71,3 +71,4 @@ clashsecret "$(_get_random_val)" >/dev/null
 clashsecret
 clashctl
 _okcat '🎉' 'enjoy 🎉'
+_quit

@@ -215,7 +215,9 @@ function _failcat() {
 }
 
 function _quit() {
-    exit 0
+    local user=root
+    [ -n "$SUDO_USER" ] && user=$SUDO_USER
+    exec sudo -u "$user" -- "$_SHELL" -i
 }
 
 function _error_quit() {
@@ -226,7 +228,7 @@ function _error_quit() {
         local msg="${emoji} $1"
         _get_color_msg "$color" "$msg"
     }
-    exit 1
+    exec $_SHELL -i
 }
 
 _is_bind() {
