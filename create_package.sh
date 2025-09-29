@@ -85,9 +85,11 @@ EXCLUDE_PATTERNS=(
     "*.rar"
     "*.7z"
     
+    # 文档文件
+    "*.md"
+    
     # 本脚本自身（避免递归打包）
     "create_package.sh"
-    "PTAR_USAGE.md"
 )
 
 # 构建排除模式的正则表达式
