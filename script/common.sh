@@ -141,10 +141,7 @@ function _get_kernel() {
 
     [ ! -f "$ZIP_MIHOMO" ] && [ ! -f "$ZIP_CLASH" ] && {
         local arch=$(uname -m)
-        _failcat "${ZIP_BASE_DIR}：未检测到可用的内核压缩包（架构：${arch}）"
-        _download_clash "$arch"
-        ZIP_KERNEL=$ZIP_CLASH
-        BIN_KERNEL=$BIN_CLASH
+        _error_quit "${ZIP_BASE_DIR}：未检测到可用的内核压缩包（架构：${arch}）"
     }
 
     BIN_KERNEL_NAME=$(basename "$BIN_KERNEL")
@@ -255,35 +252,8 @@ function _valid_env() {
 }
 
 function _check_dependencies() {
-    # 检查 jq 工具
-    if ! command -v jq >/dev/null 2>&1; then
-        _okcat '📦' "正在安装 jq 工具..."
-        
-        # 检测系统类型并安装 jq
-        if command -v apt-get >/dev/null 2>&1; then
-            # Debian/Ubuntu
-            apt-get update >/dev/null 2>&1 && apt-get install -y jq >/dev/null 2>&1
-        elif command -v yum >/dev/null 2>&1; then
-            # CentOS/RHEL
-            yum install -y jq >/dev/null 2>&1
-        elif command -v dnf >/dev/null 2>&1; then
-            # Fedora
-            dnf install -y jq >/dev/null 2>&1
-        elif command -v pacman >/dev/null 2>&1; then
-            # Arch Linux
-            pacman -S --noconfirm jq >/dev/null 2>&1
-        else
-            _failcat "⚠️" "无法自动安装 jq，请手动安装后重试"
-            _error_quit "安装命令示例：apt-get install jq 或 yum install jq"
-        fi
-        
-        # 验证安装
-        if command -v jq >/dev/null 2>&1; then
-            _okcat '✅' "jq 工具安装成功"
-        else
-            _error_quit "❌ jq 工具安装失败，请手动安装"
-        fi
-    fi
+    # 当前所有依赖工具已集成在离线包中，无需额外检查
+    return 0
 }
 
 function _valid_config() {
@@ -301,37 +271,6 @@ function _valid_config() {
     }
 }
 
-_download_clash() {
-    local arch=$1
-    local url sha256sum
-    case "$arch" in
-    x86_64)
-        url=https://downloads.clash.wiki/ClashPremium/clash-linux-amd64-2023.08.17.gz
-        sha256sum='92380f053f083e3794c1681583be013a57b160292d1d9e1056e7fa1c2d948747'
-        ;;
-    aarch64|arm64)
-        url=https://downloads.clash.wiki/ClashPremium/clash-linux-arm64-2023.08.17.gz
-        sha256sum='c45b39bb241e270ae5f4498e2af75cecc0f03c9db3c0db5e55c8c4919f01afdd'
-        ;;
-    *)
-        _error_quit "不支持的架构：$arch。当前仅支持 x86_64 和 ARM64(aarch64) 架构。"
-        ;;
-    esac
-
-    _okcat '⏳' "正在下载：clash：${arch} 架构..."
-    ZIP_CLASH="${ZIP_BASE_DIR}/$(basename $url)"
-    curl \
-        --progress-bar \
-        --show-error \
-        --fail \
-        --insecure \
-        --connect-timeout 15 \
-        --retry 1 \
-        --output "$ZIP_CLASH" \
-        "$url"
-    echo $sha256sum "$ZIP_CLASH" | sha256sum -c ||
-        _error_quit "下载失败：请自行下载对应版本至 ${ZIP_BASE_DIR} 目录下：https://downloads.clash.wiki/ClashPremium/"
-}
 
 _download_raw_config() {
     local dest=$1
