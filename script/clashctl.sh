@@ -308,10 +308,6 @@ function clashctl() {
         shift
         clashupdate "$@"
         ;;
-    node)
-        shift
-        clashnode "$@"
-        ;;
     autostart)
         shift
         clashautostart "$@"
@@ -343,70 +339,12 @@ Commands:
     mixin    [-e|-r]        Mixin 配置
     secret   [SECRET]       Web 密钥
     update   [auto|log]     更新订阅
-    node     [COMMAND]      节点管理 (list|select|switch|current)
     autostart [on|off]      开机自启 (enable|disable)
     autoproxy [on|off]      登录自动加载代理环境
 
 EOF
 }
 
-# 节点管理功能
-clashnode() {
-    local script_dir="$(dirname "${BASH_SOURCE[0]}")"
-    local proxy_switcher="$script_dir/proxy_switcher.sh"
-    
-    if [ ! -f "$proxy_switcher" ]; then
-        _failcat "❌" "节点管理功能不可用"
-        return 1
-    fi
-    
-    # 如果没有参数，显示节点管理帮助
-    if [ $# -eq 0 ]; then
-        clashnode_help
-        return 1
-    fi
-    
-    # 处理 --help 参数
-    if [ "$1" = "--help" ] || [ "$1" = "-h" ]; then
-        clashnode_help
-        return 0
-    fi
-    
-    # 调用代理切换脚本，但重定向错误信息
-    "$proxy_switcher" "$@" 2>&1 | sed 's|/opt/clash/script/proxy_switcher.sh|clashctl node|g; s|proxy_switcher.sh|clashctl node|g'
-}
-
-# 节点管理帮助信息
-clashnode_help() {
-    cat <<EOF
-
-Clash 节点管理工具
-
-用法: clashctl node [选项] [命令]
-
-选项:
-  -u, --url URL        指定 Clash API 地址 (默认: http://localhost:9090)
-  -s, --secret SECRET  指定 API 密钥
-  -m, --mode MODE      指定代理模式 (默认: 自动检测)
-  -h, --help          显示此帮助信息
-
-命令:
-  list                 列出所有可用的代理节点
-  select               交互式选择代理节点
-  switch NODE          直接切换到指定节点
-  current              显示当前使用的代理节点
-  modes                显示所有可用的代理模式
-  test                 测试 API 连接
-
-示例:
-  clashctl node list                          # 列出所有节点
-  clashctl node select                        # 交互式选择节点
-  clashctl node switch "香港节点01"            # 直接切换到指定节点
-  clashctl node -m Proxy select               # 在 Proxy 模式下选择节点
-  clashctl node -u http://127.0.0.1:9090 list # 使用自定义 API 地址
-
-EOF
-}
 
 # 自启动管理功能
 clashautostart() {
@@ -512,6 +450,3 @@ EOF
 }
 
 # 快捷命令别名
-alias clashnode-list='clashnode list'
-alias clashnode-select='clashnode select'
-alias clashnode-current='clashnode current'

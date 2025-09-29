@@ -65,17 +65,6 @@ case "$auto_proxy" in
         ;;
 esac
 
-# 询问是否立即启动代理
-echo ""
-read -p "$(_okcat '🎯' '是否立即启动代理服务？(y/n): ')" start_now
-case "$start_now" in
-    [Yy]|[Yy][Ee][Ss])
-        clashon
-        ;;
-    *)
-        _okcat 'ℹ️' "代理服务未启动，可通过命令启动：clashon"
-        ;;
-esac
 
 clashui
 clashsecret "$(_get_random_val)" >/dev/null
