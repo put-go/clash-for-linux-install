@@ -1,21 +1,70 @@
 # Linux 一键安装 Clash
 
-![GitHub License](https://img.shields.io/github/license/nelvko/clash-for-linux-install)
-![GitHub top language](https://img.shields.io/github/languages/top/nelvko/clash-for-linux-install)
-![GitHub Repo stars](https://img.shields.io/github/stars/nelvko/clash-for-linux-install)
+> 🌟 **项目源码** Fork 来自 [@nelvko/clash-for-linux-install](https://github.com/nelvko/clash-for-linux-install) 
+> 
+> 😼 优雅地使用基于 clash/mihomo 的代理环境，一键部署，开箱即用！
+
+![GitHub License](https://img.shields.io/github/license/put-go/clash-for-linux-install)
+![GitHub top language](https://img.shields.io/github/languages/top/put-go/clash-for-linux-install)
+![GitHub Repo stars](https://img.shields.io/github/stars/put-go/clash-for-linux-install)
 
 ![preview](resources/preview.png)
 
-- 默认安装 `mihomo` 内核，[可选安装](https://github.com/nelvko/clash-for-linux-install/wiki/FAQ#%E5%AE%89%E8%A3%85-clash-%E5%86%85%E6%A0%B8) `clash`。
-- 支持使用 [subconverter](https://github.com/tindy2013/subconverter) 进行本地订阅转换。
-- 多架构支持，适配主流 `Linux` 发行版：`CentOS 7.6`、`Debian 12`、`Ubuntu 24.04.1 LTS`。
+## 🚀 项目特色
 
-## 快速开始
+- **🔧 简单易用**：一键安装脚本，自动化配置，零学习成本
+- **⚡ 高性能内核**：默认安装 `mihomo` 内核，[可选安装](https://github.com/nelvko/clash-for-linux-install/wiki/FAQ#%E5%AE%89%E8%A3%85-clash-%E5%86%85%E6%A0%B8) `clash`
+- **🔄 订阅转换**：支持使用 [subconverter](https://github.com/tindy2013/subconverter) 进行本地订阅转换
+- **🌐 多架构支持**：适配主流 `Linux` 发行版：`CentOS 7.6`、`Debian 12`、`Ubuntu 24.04.1 LTS`
+- **📊 可视化管理**：集成 Web 控制台，支持节点切换、流量监控、日志查看
+- **🔒 安全可靠**：支持 TUN 模式、DNS 劫持、系统代理自动配置
+- **⏰ 自动更新**：支持定时更新订阅，保持节点实时可用
+- **🎯 灵活配置**：Mixin 配置持久化，自定义规则不丢失
 
-### 环境要求
+## 📋 系统要求
 
-- 用户权限：`root` 或 `sudo` 用户。普通用户请戳：[#91](https://github.com/nelvko/clash-for-linux-install/issues/91)
-- `shell` 支持：`bash`、`zsh`、`fish`。
+| 项目 | 要求 |
+|------|------|
+| **操作系统** | CentOS 7.6+、Debian 12+、Ubuntu 24.04.1 LTS+ |
+| **架构支持** | x86_64、arm64、armv7 等主流架构 |
+| **用户权限** | `root` 或 `sudo` 用户 ([普通用户安装指南](https://github.com/nelvko/clash-for-linux-install/issues/91)) |
+| **Shell 环境** | `bash`、`zsh`、`fish` |
+| **网络要求** | 能够访问 GitHub 或使用代理镜像 |
+
+## 📖 项目说明
+
+本项目是 [nelvko/clash-for-linux-install](https://github.com/nelvko/clash-for-linux-install) 的 Fork 版本，专注于提供更加完善的 Linux 环境下 Clash 代理工具的安装和管理解决方案。
+
+### 🎯 适用场景
+
+- **开发环境**：为开发者提供稳定的网络代理环境
+- **服务器部署**：在 VPS 或云服务器上快速部署代理服务
+- **容器化应用**：支持 Docker 容器的网络代理
+- **自动化运维**：支持脚本化管理和定时任务
+- **团队协作**：统一的代理配置管理方案
+
+### 🔧 核心功能
+
+| 功能模块 | 说明 | 命令示例 |
+|---------|------|----------|
+| **代理管理** | 一键启停代理服务 | `clashon` / `clashoff` |
+| **Web 控制台** | 可视化节点管理 | `clashui` |
+| **订阅管理** | 自动更新订阅配置 | `clashupdate` |
+| **TUN 模式** | 透明代理所有流量 | `clashtun on` |
+| **系统代理** | 自动配置系统代理 | `clashproxy on` |
+| **配置持久化** | Mixin 配置管理 | `clashmixin -e` |
+| **状态监控** | 实时查看运行状态 | `clashctl status` |
+
+## 🚀 快速开始
+
+### 📋 环境检查
+
+在开始安装前，请确保您的系统满足以下要求：
+
+- **用户权限**：`root` 或 `sudo` 用户 ([普通用户安装指南](https://github.com/nelvko/clash-for-linux-install/issues/91))
+- **Shell 环境**：`bash`、`zsh`、`fish` 任一支持
+- **网络连接**：能够访问 GitHub 或配置代理镜像
+- **系统工具**：`curl`、`wget`、`tar`、`gzip` 等基础工具
 
 ### 一键安装
 
@@ -174,11 +223,93 @@ sudo bash uninstall.sh
  </picture>
 </a>
 
-## Thanks
+## 🤝 项目贡献
 
-[@鑫哥](https://github.com/TrackRay)
+### 原项目致谢
 
-## 特别声明
+本项目基于 [@nelvko/clash-for-linux-install](https://github.com/nelvko/clash-for-linux-install) 开发，感谢原作者及贡献者们的辛勤付出！
 
-1. 编写本项目主要目的为学习和研究 `Shell` 编程，不得将本项目中任何内容用于违反国家/地区/组织等的法律法规或相关规定的其他用途。
-2. 本项目保留随时对免责声明进行补充或更改的权利，直接或间接使用本项目内容的个人或组织，视为接受本项目的特别声明。
+特别感谢：
+- [@鑫哥](https://github.com/TrackRay) - 项目原始贡献者
+- [@nelvko](https://github.com/nelvko) - 原项目维护者
+- 所有参与项目改进的开发者和用户
+
+### 🔄 更新记录
+
+#### Fork 版本改进
+- ✅ 完善项目文档和说明
+- ✅ 优化安装脚本的错误处理
+- ✅ 增强多架构支持
+- ✅ 改进 Web 控制台界面
+- ✅ 优化订阅更新机制
+
+#### 计划中的功能
+- 🔄 支持更多 Linux 发行版
+- 🔄 增加配置备份和恢复功能
+- 🔄 优化网络连接检测
+- 🔄 增强安全性配置选项
+- 🔄 集成更多代理协议支持
+
+### 🐛 问题反馈
+
+如果您在使用过程中遇到问题，请：
+
+1. 首先查阅 [常见问题](https://github.com/nelvko/clash-for-linux-install/wiki/FAQ)
+2. 搜索已有的 [Issues](https://github.com/nelvko/clash-for-linux-install/issues)
+3. 如果问题未解决，请提交新的 Issue，包含：
+   - 系统环境信息（OS、架构、版本）
+   - 详细的错误信息或日志
+   - 复现问题的步骤
+   - 期望的行为描述
+
+### 🚀 参与贡献
+
+欢迎提交 Pull Request 来改进项目！贡献指南：
+
+1. Fork 本仓库
+2. 创建特性分支 (`git checkout -b feature/AmazingFeature`)
+3. 提交更改 (`git commit -m 'Add some AmazingFeature'`)
+4. 推送到分支 (`git push origin feature/AmazingFeature`)
+5. 打开 Pull Request
+
+## 📚 相关资源
+
+### 官方文档
+- [Clash 官方文档](https://clash.wiki/) - Clash 核心功能介绍
+- [Mihomo 文档](https://wiki.metacubex.one/) - Mihomo 内核说明
+- [Clash Verge Rev](https://www.clashverge.dev/) - 桌面客户端
+
+### 配置参考
+- [Clash 配置文件详解](https://clash.wiki/configuration/outbound.html)
+- [规则集合](https://github.com/Loyalsoldier/clash-rules)
+- [GeoIP 数据库](https://github.com/Dreamacro/maxmind-geoip)
+
+### 订阅转换
+- [Sub-Store](https://github.com/sub-store-org/Sub-Store) - 订阅管理工具
+- [Subconverter 在线版](https://dove.589669.xyz/web/)
+- [ACL4SSR 规则](https://github.com/ACL4SSR/ACL4SSR)
+
+## ⚖️ 特别声明
+
+1. **学习目的**：编写本项目主要目的为学习和研究 `Shell` 编程，不得将本项目中任何内容用于违反国家/地区/组织等的法律法规或相关规定的其他用途。
+
+2. **使用责任**：用户在使用本项目时，应当遵守所在国家和地区的法律法规，作者不承担因使用本项目而产生的任何法律责任。
+
+3. **免责条款**：本项目保留随时对免责声明进行补充或更改的权利，直接或间接使用本项目内容的个人或组织，视为接受本项目的特别声明。
+
+4. **开源协议**：本项目遵循 MIT 开源协议，详见 [LICENSE](LICENSE) 文件。
+
+## 📞 联系方式
+
+- **原项目地址**：https://github.com/nelvko/clash-for-linux-install
+- **当前 Fork**：https://github.com/put-go/clash-for-linux-install
+- **问题反馈**：[提交 Issue](https://github.com/nelvko/clash-for-linux-install/issues)
+- **讨论交流**：[GitHub Discussions](https://github.com/nelvko/clash-for-linux-install/discussions)
+
+---
+
+<div align="center">
+
+**如果这个项目对您有帮助，请给个 ⭐ Star 支持一下！**
+
+</div>
